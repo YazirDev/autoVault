@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Usuario ─────────────────────────────────────────────────
+// googleId es opcional porque en el futuro podríamos agregar
+// otros proveedores de OAuth como GitHub o Apple
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  picture      String?
+  googleId     String?  @unique
+  refreshToken String?  // guardado como hash con Argon2
+
+  vehicles     Vehicle[]
+  auditLogs    AuditLog[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("users")
+}
+
+// ─── Vehículo ────────────────────────────────────────────────
+// onDelete: Cascade significa que si se borra el usuario
+// se borran todos sus vehículos automáticamente
+model Vehicle {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  brand        String
+  model        String
+  year         Int
+  licensePlate String
+  fuelType     FuelType
+  currentKm    Int       @default(0)
+  purchaseDate DateTime?
+  imageUrl     String?
+
+  expenses     Expense[]
+  maintenances Maintenance[]
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("vehicles")
+}
+
+// ─── Gasto ───────────────────────────────────────────────────
+// userId está duplicado aquí intencionalmente para poder
+// filtrar gastos por usuario sin hacer joins adicionales
+model Expense {
+  id          String          @id @default(cuid())
+  vehicleId   String
+  vehicle     Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  userId      String
+
+  category    ExpenseCategory
+  amount      Decimal         @db.Decimal(10, 2)
+  description String?
+  date        DateTime
+  km          Int?
+  receiptUrl  String?
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([vehicleId])
+  @@index([userId])
+  @@index([date])
+  @@map("expenses")
+}
+
+// ─── Mantenimiento ───────────────────────────────────────────
+model Maintenance {
+  id          String   @id @default(cuid())
+  vehicleId   String
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  userId      String
+
+  type        String
+  description String?
+  date        DateTime
+  km          Int?
+  cost        Decimal  @db.Decimal(10, 2)
+  nextDueKm   Int?
+  nextDueDate DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([vehicleId])
+  @@map("maintenances")
+}
+
+// ─── Log de auditoría ────────────────────────────────────────
+// Registra cada acción importante: logins, creaciones,
+// eliminaciones. Útil para seguridad y debugging
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  action    String
+  entity    String?
+  entityId  String?
+  metadata  Json?
+  ip        String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ─── Enums ───────────────────────────────────────────────────
+enum FuelType {
+  GASOLINE
+  DIESEL
+  ELECTRIC
+  HYBRID
+}
+
+enum ExpenseCategory {
+  FUEL
+  MAINTENANCE
+  INSURANCE
+  TAX
+  REPAIR
+  PARKING
+  TOLL
+  OTHER
+}
