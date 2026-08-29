@@ -1,0 +1,36 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno — NUNCA subir
+.env
+.env.local
+.env.*.local
+
+# Builds
+.next/
+dist/
+out/
+build/
+
+# Tauri
+target/
+
+# Tests
+coverage/
+
+# Base de datos local
+*.db
+*.db-journal
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+
+# Turbo
+.turbo/
+
+# Logs
+*.log
