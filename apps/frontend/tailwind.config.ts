@@ -1,5 +1,6 @@
 import type { Config } from 'tailwindcss'
 
+
 const config: Config = {
   content: [
     './app/**/*.{ts,tsx}',
@@ -127,6 +128,14 @@ const config: Config = {
     },
   },
   plugins: [],
+
+  safelist: [
+  { pattern: /^bg-surface/ },
+  { pattern: /^bg-indigo/ },
+  { pattern: /^text-ink/ },
+  { pattern: /^border-surface/ },
+  { pattern: /^shadow-glow/ },
+],
 }
 
 export default config
