@@ -6,32 +6,62 @@
 
 @layer base {
   :root {
-    --surface-base:          #07070C;
-    --surface:               #0D0D14;
-    --surface-card:          #12121A;
-    --surface-elevated:      #18181F;
-    --surface-overlay:       #1E1E28;
-    --surface-border:        rgba(255, 255, 255, 0.06);
-    --surface-border-hover:  rgba(255, 255, 255, 0.10);
-    --ink:                   #F0EFFF;
-    --ink-secondary:         #9998B8;
-    --ink-muted:             #4E4D68;
-    --ink-disabled:          #2E2D45;
-    --indigo-300:            #A5B4FC;
-    --indigo-400:            #818CF8;
-    --indigo-500:            #6366F1;
-    --indigo-600:            #4F46E5;
-    --success:               #22C55E;
-    --danger:                #EF4444;
-    --warning:               #F59E0B;
-    --ease-out-expo:         cubic-bezier(0.23, 1, 0.32, 1);
-    --ease-in-out-expo:      cubic-bezier(0.77, 0, 0.175, 1);
-    --ease-drawer:           cubic-bezier(0.32, 0.72, 0, 1);
+    /* Modo claro */
+    --surface-base:         #FFFFFF;
+    --surface:              #F4FAFA;
+    --surface-card:         #FFFFFF;
+    --surface-elevated:     #FFFFFF;
+    --surface-overlay:      #EAF5F5;
+    --surface-border:       rgba(83, 144, 145, 0.15);
+    --surface-border-hover: rgba(83, 144, 145, 0.30);
+
+    /* Texto */
+    --ink:                  #0F2B2C;
+    --ink-secondary:        #3D6B6C;
+    --ink-muted:            #6B9E9F;
+    --ink-disabled:         #A8CDCD;
+
+    /* Acento — teal */
+    --teal-100:             #CCEAE8;
+    --teal-200:             #A8DCD9;
+    --teal-300:             #68C3B7;
+    --teal-400:             #539091;
+    --teal-500:             #3D6B6C;
+
+    /* Semánticos */
+    --success:              #16A34A;
+    --success-muted:        rgba(22, 163, 74, 0.10);
+    --danger:               #DC2626;
+    --danger-muted:         rgba(220, 38, 38, 0.10);
+    --warning:              #D97706;
+    --warning-muted:        rgba(217, 119, 6, 0.10);
+
+    /* Easings */
+    --ease-out-expo:        cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out-expo:     cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-drawer:          cubic-bezier(0.32, 0.72, 0, 1);
   }
 
-  * {
-    box-sizing: border-box;
+  .dark {
+    --surface-base:         #081718;
+    --surface:              #0C1F20;
+    --surface-card:         #102526;
+    --surface-elevated:     #152E2F;
+    --surface-overlay:      #1A3738;
+    --surface-border:       rgba(104, 195, 183, 0.10);
+    --surface-border-hover: rgba(104, 195, 183, 0.18);
+
+    --ink:                  #E8F6F6;
+    --ink-secondary:        #89BFBF;
+    --ink-muted:            #4D8A8B;
+    --ink-disabled:         #2A5556;
+
+    --success:              #22C55E;
+    --danger:               #EF4444;
+    --warning:              #F59E0B;
   }
+
+  * { box-sizing: border-box; }
 
   html {
     -webkit-font-smoothing: antialiased;
@@ -48,68 +78,43 @@
   }
 }
 
-/* ── Scrollbar ─────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--teal-100);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--teal-200);
 }
 
-/* ── Selección ─────────────────────────────────────────────── */
 ::selection {
-  background: rgba(99, 102, 241, 0.35);
-  color: #F0EFFF;
+  background: rgba(104, 195, 183, 0.25);
+  color: var(--ink);
 }
 
-/* ── Focus ─────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid rgba(99, 102, 241, 0.7);
+  outline: 2px solid rgba(83, 144, 145, 0.6);
   outline-offset: 2px;
   border-radius: 6px;
 }
 
-/* ── Números tabulares ─────────────────────────────────────── */
 .tabular {
   font-family: 'Geist Mono', monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
 }
 
-/* ── Texto con gradiente indigo ────────────────────────────── */
 .gradient-text {
-  background: linear-gradient(135deg, #818CF8 0%, #6366F1 50%, #A78BFA 100%);
+  background: linear-gradient(135deg, #68C3B7 0%, #539091 50%, #A8DCD9 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* ── Borde con gradiente ───────────────────────────────────── */
-.border-gradient {
-  position: relative;
-}
-.border-gradient::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(99,102,241,0.5), rgba(99,102,241,0.1));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-/* ── Reduced motion ────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
