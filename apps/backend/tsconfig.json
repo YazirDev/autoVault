@@ -7,10 +7,12 @@
     "rootDir": "./src",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "exactOptionalPropertyTypes": false,
+    "skipLibCheck": true,
     "paths": {
-      "@autovault/types": ["../../packages/types/src"],
-      "@autovault/validators": ["../../packages/validators/src"],
-      "@autovault/constants": ["../../packages/constants/src"]
+      "@autovault/types": ["../../packages/types/dist"],
+      "@autovault/validators": ["../../packages/validators/dist"],
+      "@autovault/constants": ["../../packages/constants/dist"]
     }
   },
   "include": ["src/**/*"],

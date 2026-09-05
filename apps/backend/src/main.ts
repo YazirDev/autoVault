@@ -32,14 +32,14 @@ async function bootstrap() {
   // CORS — solo acepta requests desde Tauri
   // En desarrollo también acepta localhost:1420
   app.enableCors({
-    origin:
-      process.env.NODE_ENV === 'development'
-        ? ['tauri://localhost', 'http://localhost:1420']
-        : process.env.ALLOWED_ORIGIN,
-    credentials: true,
-    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
+  origin:
+    process.env.NODE_ENV === 'development'
+      ? ['tauri://localhost', 'http://localhost:1420']
+      : (process.env.ALLOWED_ORIGIN ?? 'tauri://localhost'),
+  credentials: true,
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+})
 
   // Prefijo global para todas las rutas
   // Todos los endpoints quedan en /api/v1/...

@@ -4,6 +4,8 @@ import {
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
+import { Observable } from 'rxjs/internal/Observable'
+
 
 export const IS_PUBLIC_KEY = 'isPublic'
 
@@ -13,7 +15,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super()
   }
 
-  canActivate(context: ExecutionContext) {
+  override canActivate(
+    context: ExecutionContext
+  ): boolean | Promise<boolean> | Observable<boolean> {
     // Revisa si el endpoint tiene el decorador @Public()
     // Si lo tiene, deja pasar el request sin validar el token
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [

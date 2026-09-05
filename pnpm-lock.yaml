@@ -71,6 +71,9 @@ importers:
       passport-jwt:
         specifier: ^4.0.1
         version: 4.0.1
+      rxjs:
+        specifier: ^7.8.2
+        version: 7.8.2
       zod:
         specifier: ^3.23.8
         version: 3.25.76
@@ -81,11 +84,14 @@ importers:
       '@nestjs/testing':
         specifier: ^10.4.7
         version: 10.4.22(@nestjs/common@10.4.22(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@10.4.22)(@nestjs/platform-express@10.4.22)
+      '@types/express':
+        specifier: ^5.0.6
+        version: 5.0.6
       '@types/jest':
         specifier: ^29.5.14
         version: 29.5.14
       '@types/node':
-        specifier: ^22.9.0
+        specifier: ^22.20.1
         version: 22.20.1
       '@types/passport-jwt':
         specifier: ^4.0.1
@@ -107,7 +113,11 @@ importers:
 
   packages/types: {}
 
-  packages/validators: {}
+  packages/validators:
+    dependencies:
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
 
 packages:
 

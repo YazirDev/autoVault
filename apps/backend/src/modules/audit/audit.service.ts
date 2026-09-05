@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { PrismaService } from '../../prisma/prisma.service'
+import { InputJsonValue } from '@prisma/client/runtime/library'
 
 interface AuditLogInput {
   userId: string
   action: string
   entity?: string
   entityId?: string
-  metadata?: Record<string, unknown>
+  metadata?: InputJsonValue
   ip?: string
 }
 
