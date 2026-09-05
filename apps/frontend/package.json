@@ -11,6 +11,8 @@
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
     "@tanstack/react-query": "^5.102.8",
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-shell": "^2.3.6",
     "clsx": "^2.1.1",
     "framer-motion": "^13.2.0",
     "geist": "^1.7.2",
