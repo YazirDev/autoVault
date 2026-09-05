@@ -1,0 +1,1 @@
+{"version":3,"file":"vehicle.schema.d.ts","sourceRoot":"","sources":["vehicle.schema.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,CAAC,EAAE,MAAM,KAAK,CAAA;AAIvB,eAAO,MAAM,mBAAmB,KAQ9B,CAAA;AAEF,eAAO,MAAM,mBAAmB,KAAgC,CAAA;AAEhE,MAAM,MAAM,gBAAgB,GAAG,CAAC,CAAC,KAAK,CAAC,OAAO,mBAAmB,CAAC,CAAA;AAClE,MAAM,MAAM,gBAAgB,GAAG,CAAC,CAAC,KAAK,CAAC,OAAO,mBAAmB,CAAC,CAAA"}
