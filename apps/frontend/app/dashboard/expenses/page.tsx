@@ -13,6 +13,7 @@ import {
   ArrowUp,
 } from '@phosphor-icons/react'
 import { CreateExpenseModal } from '@/components/expenses/CreateExpenseModal'
+import { useExpenses } from '@/lib/hooks'
 
 const CATEGORY_CONFIG = {
   FUEL:        { label: 'Combustible',   icon: GasPump,     color: '#539091' },
@@ -20,27 +21,36 @@ const CATEGORY_CONFIG = {
   INSURANCE:   { label: 'Seguro',        icon: ShieldCheck, color: '#A8DCD9' },
   TAX:         { label: 'Impuesto',      icon: Tag,         color: '#CCEAE8' },
   REPAIR:      { label: 'Reparación',    icon: Wrench,      color: '#D97706' },
+  PARKING:     { label: 'Parqueo',       icon: Receipt,     color: '#6B9E9F' },
+  TOLL:        { label: 'Peaje',         icon: Receipt,     color: '#A8DCD9' },
   OTHER:       { label: 'Otro',          icon: Receipt,     color: '#6B9E9F' },
 }
 
-const MOCK_EXPENSES = [
-  { id: '1', category: 'FUEL',        amount: 18500,  date: '2026-09-05', description: 'Gasolina',          vehicle: 'Toyota Corolla 2020' },
-  { id: '2', category: 'MAINTENANCE', amount: 35000,  date: '2026-09-04', description: 'Cambio de aceite',  vehicle: 'Honda Civic 2019'    },
-  { id: '3', category: 'INSURANCE',   amount: 95000,  date: '2026-09-03', description: 'Seguro trimestral', vehicle: 'Toyota Corolla 2020' },
-  { id: '4', category: 'FUEL',        amount: 22000,  date: '2026-09-02', description: 'Gasolina',          vehicle: 'Honda Civic 2019'    },
-  { id: '5', category: 'REPAIR',      amount: 45000,  date: '2026-09-01', description: 'Frenos delanteros', vehicle: 'Toyota Corolla 2020' },
-  { id: '6', category: 'FUEL',        amount: 19500,  date: '2026-08-30', description: 'Gasolina',          vehicle: 'Honda Civic 2019'    },
-]
-
 type SortField = 'date' | 'amount'
 type SortDir   = 'asc'  | 'desc'
+
+function ExpenseSkeleton() {
+  return (
+    <div className="grid grid-cols-12 px-5 py-3.5 items-center gap-2">
+      {[4, 3, 2, 2, 1].map((span, i) => (
+        <div
+          key={i}
+          className={`col-span-${span} h-4 rounded animate-pulse`}
+          style={{ backgroundColor: 'var(--surface-overlay)' }}
+        />
+      ))}
+    </div>
+  )
+}
 
 export default function ExpensesPage() {
   const [sortField, setSortField] = useState<SortField>('date')
   const [sortDir,   setSortDir]   = useState<SortDir>('desc')
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const sorted = [...MOCK_EXPENSES].sort((a, b) => {
+  const { data: expenses, isLoading, isError } = useExpenses()
+
+  const sorted = [...(expenses ?? [])].sort((a, b) => {
     if (sortField === 'date') {
       return sortDir === 'desc'
         ? new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -49,7 +59,7 @@ export default function ExpensesPage() {
     return sortDir === 'desc' ? b.amount - a.amount : a.amount - b.amount
   })
 
-  const total = MOCK_EXPENSES.reduce((s, e) => s + e.amount, 0)
+  const total = (expenses ?? []).reduce((s, e) => s + Number(e.amount), 0)
 
   const toggleSort = (field: SortField) => {
     if (sortField === field) setSortDir(d => d === 'desc' ? 'asc' : 'desc')
@@ -71,9 +81,14 @@ export default function ExpensesPage() {
             Gastos
           </h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--ink-secondary)' }}>
-            Total: <span className="tabular font-semibold" style={{ color: 'var(--ink)' }}>
-              ₡{total.toLocaleString('es-CR')}
-            </span>
+            {isLoading ? 'Cargando...' : (
+              <>
+                Total:{' '}
+                <span className="tabular font-semibold" style={{ color: 'var(--ink)' }}>
+                  ₡{total.toLocaleString('es-CR')}
+                </span>
+              </>
+            )}
           </p>
         </div>
 
@@ -94,6 +109,18 @@ export default function ExpensesPage() {
           Registrar gasto
         </button>
       </motion.div>
+
+      {/* Error */}
+      {isError && (
+        <div
+          className="rounded-xl p-6 text-center mb-6"
+          style={{ backgroundColor: 'var(--danger-muted)', border: '1px solid rgba(220,38,38,0.2)' }}
+        >
+          <p className="text-sm font-medium" style={{ color: 'var(--danger)' }}>
+            Error al cargar los gastos. Verifica que el backend esté corriendo.
+          </p>
+        </div>
+      )}
 
       {/* Tabla */}
       <motion.div
@@ -132,7 +159,7 @@ export default function ExpensesPage() {
             }
           </div>
           <div
-            className="col-span-1 flex items-center gap-1 cursor-pointer select-none transition-colors duration-150"
+            className="col-span-1 flex items-center gap-1 cursor-pointer select-none"
             style={{ color: sortField === 'date' ? 'var(--teal-400)' : 'var(--ink-muted)' }}
             onClick={() => toggleSort('date')}
           >
@@ -146,9 +173,33 @@ export default function ExpensesPage() {
           </div>
         </div>
 
+        {/* Skeletons */}
+        {isLoading && (
+          <>
+            <ExpenseSkeleton />
+            <ExpenseSkeleton />
+            <ExpenseSkeleton />
+            <ExpenseSkeleton />
+          </>
+        )}
+
+        {/* Estado vacío */}
+        {!isLoading && !isError && sorted.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16">
+            <Receipt size={28} weight="duotone" style={{ color: 'var(--ink-disabled)', marginBottom: 12 }} />
+            <p className="text-sm font-medium mb-1" style={{ color: 'var(--ink)' }}>
+              Sin gastos registrados
+            </p>
+            <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
+              Registra tu primer gasto para empezar el seguimiento
+            </p>
+          </div>
+        )}
+
         {/* Filas */}
-        {sorted.map((expense, i) => {
+        {!isLoading && sorted.map((expense, i) => {
           const cfg = CATEGORY_CONFIG[expense.category as keyof typeof CATEGORY_CONFIG]
+            ?? CATEGORY_CONFIG.OTHER
           return (
             <div
               key={expense.id}
@@ -156,12 +207,8 @@ export default function ExpensesPage() {
               style={{
                 borderBottom: i < sorted.length - 1 ? '1px solid var(--surface-border)' : 'none',
               }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = 'var(--surface-overlay)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-              }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-overlay)' }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
             >
               <div className="col-span-4 flex items-center gap-3">
                 <div
@@ -171,34 +218,31 @@ export default function ExpensesPage() {
                   <cfg.icon size={13} weight="duotone" style={{ color: cfg.color }} />
                 </div>
                 <span className="text-sm font-medium" style={{ color: 'var(--ink)' }}>
-                  {expense.description}
+                  {expense.description ?? cfg.label}
                 </span>
               </div>
 
               <div className="col-span-3">
                 <span className="text-sm" style={{ color: 'var(--ink-secondary)' }}>
-                  {expense.vehicle}
+                  {expense.vehicle
+                    ? `${expense.vehicle.brand} ${expense.vehicle.model}`
+                    : '—'
+                  }
                 </span>
               </div>
 
               <div className="col-span-2">
                 <span
                   className="text-xs font-medium px-2 py-0.5 rounded-md"
-                  style={{
-                    backgroundColor: `${cfg.color}18`,
-                    color: cfg.color,
-                  }}
+                  style={{ backgroundColor: `${cfg.color}18`, color: cfg.color }}
                 >
                   {cfg.label}
                 </span>
               </div>
 
               <div className="col-span-2">
-                <span
-                  className="tabular text-sm font-semibold"
-                  style={{ color: 'var(--danger)' }}
-                >
-                  -₡{expense.amount.toLocaleString('es-CR')}
+                <span className="tabular text-sm font-semibold" style={{ color: 'var(--danger)' }}>
+                  -₡{Number(expense.amount).toLocaleString('es-CR')}
                 </span>
               </div>
 

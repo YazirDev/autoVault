@@ -4,53 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Wrench, Warning, CheckCircle, Clock } from '@phosphor-icons/react'
 import { CreateMaintenanceModal } from '@/components/maintenance/CreateMaintenanceModal'
-
-const MOCK_MAINTENANCE = [
-  {
-    id: '1',
-    type: 'Cambio de aceite',
-    vehicle: 'Toyota Corolla 2020',
-    date: '2026-09-04',
-    km: 45000,
-    cost: 35000,
-    nextDueKm: 50000,
-    nextDueDate: '2026-12-04',
-    status: 'done',
-  },
-  {
-    id: '2',
-    type: 'Revisión de frenos',
-    vehicle: 'Honda Civic 2019',
-    date: '2026-09-01',
-    km: 62000,
-    cost: 45000,
-    nextDueKm: 72000,
-    nextDueDate: '2026-12-01',
-    status: 'done',
-  },
-  {
-    id: '3',
-    type: 'Cambio de llantas',
-    vehicle: 'Toyota Corolla 2020',
-    date: null,
-    km: null,
-    cost: null,
-    nextDueKm: 50000,
-    nextDueDate: '2026-09-10',
-    status: 'upcoming',
-  },
-  {
-    id: '4',
-    type: 'Sincronización',
-    vehicle: 'Honda Civic 2019',
-    date: null,
-    km: null,
-    cost: null,
-    nextDueKm: 65000,
-    nextDueDate: '2026-10-15',
-    status: 'scheduled',
-  },
-]
+import { useMaintenance, useUpcomingMaintenance } from '@/lib/hooks'
 
 const STATUS_CONFIG = {
   done: {
@@ -73,12 +27,33 @@ const STATUS_CONFIG = {
   },
 }
 
-export default function MaintenancePage() {
-  const [records] = useState(MOCK_MAINTENANCE)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+function getStatus(record: { date: string | null; nextDueDate?: string | null }) {
+  if (record.date) return 'done'
+  if (!record.nextDueDate) return 'scheduled'
+  const due = new Date(record.nextDueDate)
+  const now = new Date()
+  const diffDays = (due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+  return diffDays <= 7 ? 'upcoming' : 'scheduled'
+}
 
-  const upcoming = records.filter(r => r.status === 'upcoming')
-  const rest     = records.filter(r => r.status !== 'upcoming')
+function MaintenanceSkeleton() {
+  return (
+    <div className="grid grid-cols-12 px-5 py-3.5 items-center gap-2">
+      {[3, 3, 2, 2, 1, 1].map((span, i) => (
+        <div
+          key={i}
+          className={`col-span-${span} h-4 rounded animate-pulse`}
+          style={{ backgroundColor: 'var(--surface-overlay)' }}
+        />
+      ))}
+    </div>
+  )
+}
+
+export default function MaintenancePage() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { data: records, isLoading, isError } = useMaintenance()
+  const { data: upcoming } = useUpcomingMaintenance(7)
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -95,7 +70,9 @@ export default function MaintenancePage() {
             Mantenimiento
           </h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--ink-secondary)' }}>
-            {records.length} registros · {upcoming.length} próximo{upcoming.length !== 1 ? 's' : ''}
+            {isLoading ? 'Cargando...' : (
+              `${records?.length ?? 0} registros · ${upcoming?.length ?? 0} próximo${(upcoming?.length ?? 0) !== 1 ? 's' : ''}`
+            )}
           </p>
         </div>
 
@@ -118,7 +95,7 @@ export default function MaintenancePage() {
       </motion.div>
 
       {/* Alerta próximos */}
-      {upcoming.length > 0 && (
+      {upcoming && upcoming.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -135,14 +112,26 @@ export default function MaintenancePage() {
             <Warning size={18} weight="duotone" style={{ color: '#D97706', flexShrink: 0, marginTop: 1 }} />
             <div>
               <p className="text-sm font-semibold mb-0.5" style={{ color: '#D97706' }}>
-                {upcoming.length} mantenimiento{upcoming.length !== 1 ? 's' : ''} próximo{upcoming.length !== 1 ? 's' : ''}
+                {upcoming.length} mantenimiento{upcoming.length !== 1 ? 's' : ''} en los próximos 7 días
               </p>
               <p className="text-xs" style={{ color: 'var(--ink-secondary)' }}>
-                {upcoming.map(u => `${u.type} — ${u.vehicle}`).join(' · ')}
+                {upcoming.map(u => `${u.type} — ${u.vehicle?.brand} ${u.vehicle?.model}`).join(' · ')}
               </p>
             </div>
           </div>
         </motion.div>
+      )}
+
+      {/* Error */}
+      {isError && (
+        <div
+          className="rounded-xl p-6 text-center mb-6"
+          style={{ backgroundColor: 'var(--danger-muted)', border: '1px solid rgba(220,38,38,0.2)' }}
+        >
+          <p className="text-sm font-medium" style={{ color: 'var(--danger)' }}>
+            Error al cargar los mantenimientos. Verifica que el backend esté corriendo.
+          </p>
+        </div>
       )}
 
       {/* Tabla */}
@@ -173,22 +162,40 @@ export default function MaintenancePage() {
           <div className="col-span-1">Estado</div>
         </div>
 
+        {/* Skeletons */}
+        {isLoading && (
+          <>
+            <MaintenanceSkeleton />
+            <MaintenanceSkeleton />
+            <MaintenanceSkeleton />
+          </>
+        )}
+
+        {/* Estado vacío */}
+        {!isLoading && !isError && (!records || records.length === 0) && (
+          <div className="flex flex-col items-center justify-center py-16">
+            <Wrench size={28} weight="duotone" style={{ color: 'var(--ink-disabled)', marginBottom: 12 }} />
+            <p className="text-sm font-medium mb-1" style={{ color: 'var(--ink)' }}>
+              Sin registros de mantenimiento
+            </p>
+            <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
+              Registra el primer mantenimiento de tus vehículos
+            </p>
+          </div>
+        )}
+
         {/* Filas */}
-        {[...upcoming, ...rest].map((record, i) => {
-          const status = STATUS_CONFIG[record.status as keyof typeof STATUS_CONFIG]
+        {!isLoading && records?.map((record, i) => {
+          const status = STATUS_CONFIG[getStatus(record) as keyof typeof STATUS_CONFIG]
           return (
             <div
               key={record.id}
               className="grid grid-cols-12 px-5 py-3.5 items-center transition-colors duration-150 cursor-pointer"
               style={{
-                borderBottom: i < records.length - 1 ? '1px solid var(--surface-border)' : 'none',
+                borderBottom: i < (records.length - 1) ? '1px solid var(--surface-border)' : 'none',
               }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = 'var(--surface-overlay)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-              }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-overlay)' }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
             >
               <div className="col-span-3 flex items-center gap-2.5">
                 <div
@@ -204,7 +211,10 @@ export default function MaintenancePage() {
 
               <div className="col-span-3">
                 <span className="text-sm" style={{ color: 'var(--ink-secondary)' }}>
-                  {record.vehicle}
+                  {record.vehicle
+                    ? `${record.vehicle.brand} ${record.vehicle.model}`
+                    : '—'
+                  }
                 </span>
               </div>
 
@@ -212,9 +222,11 @@ export default function MaintenancePage() {
                 <span className="text-sm" style={{ color: 'var(--ink-secondary)' }}>
                   {record.date
                     ? new Date(record.date).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })
-                    : <span style={{ color: '#D97706' }}>
-                        {new Date(record.nextDueDate!).toLocaleDateString('es-CR', { day: '2-digit', month: 'short' })}
-                      </span>
+                    : record.nextDueDate
+                      ? <span style={{ color: '#D97706' }}>
+                          {new Date(record.nextDueDate).toLocaleDateString('es-CR', { day: '2-digit', month: 'short' })}
+                        </span>
+                      : '—'
                   }
                 </span>
               </div>
@@ -223,14 +235,16 @@ export default function MaintenancePage() {
                 <span className="tabular text-sm" style={{ color: 'var(--ink-secondary)' }}>
                   {record.km
                     ? `${record.km.toLocaleString('es-CR')} km`
-                    : <span style={{ color: '#D97706' }}>{record.nextDueKm?.toLocaleString('es-CR')} km</span>
+                    : record.nextDueKm
+                      ? <span style={{ color: '#D97706' }}>{record.nextDueKm.toLocaleString('es-CR')} km</span>
+                      : '—'
                   }
                 </span>
               </div>
 
               <div className="col-span-1">
                 <span className="tabular text-sm font-medium" style={{ color: record.cost ? 'var(--ink)' : 'var(--ink-disabled)' }}>
-                  {record.cost ? `₡${record.cost.toLocaleString('es-CR')}` : '—'}
+                  {record.cost ? `₡${Number(record.cost).toLocaleString('es-CR')}` : '—'}
                 </span>
               </div>
 
