@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Wrench, Warning, CheckCircle, Clock } from '@phosphor-icons/react'
+import { CreateMaintenanceModal } from '@/components/maintenance/CreateMaintenanceModal'
 
 const MOCK_MAINTENANCE = [
   {
@@ -74,6 +75,7 @@ const STATUS_CONFIG = {
 
 export default function MaintenancePage() {
   const [records] = useState(MOCK_MAINTENANCE)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const upcoming = records.filter(r => r.status === 'upcoming')
   const rest     = records.filter(r => r.status !== 'upcoming')
@@ -98,6 +100,7 @@ export default function MaintenancePage() {
         </div>
 
         <button
+          onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 px-4 h-9 rounded-lg text-sm font-medium transition-all duration-150"
           style={{ backgroundColor: 'var(--teal-400)', color: '#FFFFFF' }}
           onMouseEnter={e => {
@@ -114,7 +117,7 @@ export default function MaintenancePage() {
         </button>
       </motion.div>
 
-      {/* Alertas de próximos */}
+      {/* Alerta próximos */}
       {upcoming.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 6 }}
@@ -142,7 +145,7 @@ export default function MaintenancePage() {
         </motion.div>
       )}
 
-      {/* Lista de registros */}
+      {/* Tabla */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -187,7 +190,6 @@ export default function MaintenancePage() {
                 e.currentTarget.style.backgroundColor = 'transparent'
               }}
             >
-              {/* Tipo */}
               <div className="col-span-3 flex items-center gap-2.5">
                 <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -200,28 +202,23 @@ export default function MaintenancePage() {
                 </span>
               </div>
 
-              {/* Vehículo */}
               <div className="col-span-3">
                 <span className="text-sm" style={{ color: 'var(--ink-secondary)' }}>
                   {record.vehicle}
                 </span>
               </div>
 
-              {/* Fecha */}
               <div className="col-span-2">
                 <span className="text-sm" style={{ color: 'var(--ink-secondary)' }}>
                   {record.date
                     ? new Date(record.date).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })
-                    : (
-                      <span style={{ color: '#D97706' }}>
+                    : <span style={{ color: '#D97706' }}>
                         {new Date(record.nextDueDate!).toLocaleDateString('es-CR', { day: '2-digit', month: 'short' })}
                       </span>
-                    )
                   }
                 </span>
               </div>
 
-              {/* KM */}
               <div className="col-span-2">
                 <span className="tabular text-sm" style={{ color: 'var(--ink-secondary)' }}>
                   {record.km
@@ -231,14 +228,12 @@ export default function MaintenancePage() {
                 </span>
               </div>
 
-              {/* Costo */}
               <div className="col-span-1">
                 <span className="tabular text-sm font-medium" style={{ color: record.cost ? 'var(--ink)' : 'var(--ink-disabled)' }}>
                   {record.cost ? `₡${record.cost.toLocaleString('es-CR')}` : '—'}
                 </span>
               </div>
 
-              {/* Estado */}
               <div className="col-span-1">
                 <span
                   className="text-xs font-medium px-2 py-0.5 rounded-md flex items-center gap-1 w-fit"
@@ -252,6 +247,11 @@ export default function MaintenancePage() {
           )
         })}
       </motion.div>
+
+      <CreateMaintenanceModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   )
 }

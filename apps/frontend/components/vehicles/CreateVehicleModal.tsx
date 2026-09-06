@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { FormField, Input, Select } from '@/components/ui/FormField'
 import { useCreateVehicle } from '@/lib/hooks'
+import { toast } from '@/components/ui/Toast'
 
 interface Props {
   open: boolean
@@ -43,6 +44,7 @@ export function CreateVehicleModal({ open, onClose }: Props) {
 
     createVehicle(form, {
       onSuccess: () => {
+        toast.success('Vehículo agregado correctamente')
         onClose()
         setForm({
           brand: '',

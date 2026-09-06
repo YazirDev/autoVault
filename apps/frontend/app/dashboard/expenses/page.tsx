@@ -12,6 +12,7 @@ import {
   ArrowDown,
   ArrowUp,
 } from '@phosphor-icons/react'
+import { CreateExpenseModal } from '@/components/expenses/CreateExpenseModal'
 
 const CATEGORY_CONFIG = {
   FUEL:        { label: 'Combustible',   icon: GasPump,     color: '#539091' },
@@ -37,6 +38,7 @@ type SortDir   = 'asc'  | 'desc'
 export default function ExpensesPage() {
   const [sortField, setSortField] = useState<SortField>('date')
   const [sortDir,   setSortDir]   = useState<SortDir>('desc')
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const sorted = [...MOCK_EXPENSES].sort((a, b) => {
     if (sortField === 'date') {
@@ -76,6 +78,7 @@ export default function ExpensesPage() {
         </div>
 
         <button
+          onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 px-4 h-9 rounded-lg text-sm font-medium transition-all duration-150"
           style={{ backgroundColor: 'var(--teal-400)', color: '#FFFFFF' }}
           onMouseEnter={e => {
@@ -160,7 +163,6 @@ export default function ExpensesPage() {
                 e.currentTarget.style.backgroundColor = 'transparent'
               }}
             >
-              {/* Descripción */}
               <div className="col-span-4 flex items-center gap-3">
                 <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -173,14 +175,12 @@ export default function ExpensesPage() {
                 </span>
               </div>
 
-              {/* Vehículo */}
               <div className="col-span-3">
                 <span className="text-sm" style={{ color: 'var(--ink-secondary)' }}>
                   {expense.vehicle}
                 </span>
               </div>
 
-              {/* Categoría */}
               <div className="col-span-2">
                 <span
                   className="text-xs font-medium px-2 py-0.5 rounded-md"
@@ -193,7 +193,6 @@ export default function ExpensesPage() {
                 </span>
               </div>
 
-              {/* Monto */}
               <div className="col-span-2">
                 <span
                   className="tabular text-sm font-semibold"
@@ -203,7 +202,6 @@ export default function ExpensesPage() {
                 </span>
               </div>
 
-              {/* Fecha */}
               <div className="col-span-1">
                 <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>
                   {new Date(expense.date).toLocaleDateString('es-CR', {
@@ -216,6 +214,11 @@ export default function ExpensesPage() {
           )
         })}
       </motion.div>
+
+      <CreateExpenseModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   )
 }
