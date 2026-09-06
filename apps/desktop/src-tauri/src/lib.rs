@@ -2,7 +2,6 @@ use tauri::Manager;
 
 #[tauri::command]
 async fn start_oauth(app: tauri::AppHandle) -> Result<String, String> {
-    // Levanta un servidor local temporal en un puerto aleatorio
     let listener = std::net::TcpListener::bind("127.0.0.1:0")
         .map_err(|e| e.to_string())?;
     
@@ -10,31 +9,19 @@ async fn start_oauth(app: tauri::AppHandle) -> Result<String, String> {
         .map_err(|e| e.to_string())?
         .port();
 
-    // Construye la URL de Google OAuth
-    let client_id = std::env::var("GOOGLE_CLIENT_ID")
-        .unwrap_or_default();
-    
     let redirect_uri = format!("http://localhost:{}", port);
-    let state = uuid::Uuid::new_v4().to_string();
+    let state = "autovault-state";
     
     let auth_url = format!(
-        "https://accounts.google.com/o/oauth2/v2/auth\
-        ?client_id={}\
-        &redirect_uri={}\
-        &response_type=code\
-        &scope=openid%20email%20profile\
-        &state={}\
-        &access_type=offline",
-        client_id,
+        "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&scope=openid%20email%20profile&redirect_uri={}&state={}",
         urlencoding::encode(&redirect_uri),
         state
     );
 
-    // Abre el browser del sistema operativo
-    tauri::opener::open_url(&auth_url, None::<&tauri::AppHandle>)
+    // Usa el plugin opener para abrir el browser
+    tauri_plugin_opener::open_url(&auth_url, None::<String>)
         .map_err(|e| e.to_string())?;
 
-    // Espera la redirección de Google en el servidor local
     let (mut stream, _) = listener.accept()
         .map_err(|e| e.to_string())?;
 
@@ -48,7 +35,6 @@ async fn start_oauth(app: tauri::AppHandle) -> Result<String, String> {
         request.push('\n');
     }
 
-    // Extrae el code de la URL
     let code = request
         .lines()
         .next()
@@ -63,11 +49,10 @@ async fn start_oauth(app: tauri::AppHandle) -> Result<String, String> {
         })
         .ok_or("No se encontró el código de autorización")?;
 
-    // Responde al browser con una página de éxito
     use std::io::Write;
     let response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n\
         <html><body style='font-family:sans-serif;text-align:center;padding:40px'>\
-        <h2>✓ Autenticación exitosa</h2>\
+        <h2>Autenticación exitosa</h2>\
         <p>Puedes cerrar esta ventana y volver a AutoVault.</p>\
         </body></html>";
     stream.write_all(response.as_bytes())
