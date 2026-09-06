@@ -9,12 +9,19 @@ import { CreateVehicleModal } from '@/components/vehicles/CreateVehicleModal'
 
 const container = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.07 },
+  },
 }
 
 const item = {
   hidden: { opacity: 0, y: 8 },
-  show: { opacity: 1, y: 0, transition: { ease: [0.23, 1, 0.32, 1], duration: 0.4 } },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { ease: 'easeOut' as const, duration: 0.4 },
+  },
 }
 
 function VehicleSkeleton() {
