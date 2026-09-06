@@ -10,21 +10,14 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 
-const MOCK_DATA = [
-  { mes: 'Ene', gastos: 42000 },
-  { mes: 'Feb', gastos: 38500 },
-  { mes: 'Mar', gastos: 51000 },
-  { mes: 'Abr', gastos: 33000 },
-  { mes: 'May', gastos: 47500 },
-  { mes: 'Jun', gastos: 29000 },
-  { mes: 'Jul', gastos: 55000 },
-  { mes: 'Ago', gastos: 41000 },
-  { mes: 'Sep', gastos: 36500 },
-]
+const MONTH_NAMES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+
+interface Props {
+  data?: { month: number; total: number }[]
+}
 
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
-
   return (
     <div
       className="rounded-lg px-3 py-2.5 text-sm"
@@ -34,9 +27,7 @@ function CustomTooltip({ active, payload, label }: any) {
         boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
       }}
     >
-      <p className="text-xs font-medium mb-1" style={{ color: 'var(--ink-muted)' }}>
-        {label}
-      </p>
+      <p className="text-xs font-medium mb-1" style={{ color: 'var(--ink-muted)' }}>{label}</p>
       <p className="tabular font-semibold" style={{ color: 'var(--ink)' }}>
         ₡{payload[0].value.toLocaleString('es-CR')}
       </p>
@@ -44,33 +35,37 @@ function CustomTooltip({ active, payload, label }: any) {
   )
 }
 
-export function MonthlyChart() {
+export function MonthlyChart({ data }: Props) {
+  // Si hay datos reales los usa, si no usa mock
+  const chartData = data
+    ? data.map(d => ({
+        mes: MONTH_NAMES[d.month - 1] ?? `M${d.month}`,
+        gastos: d.total,
+      }))
+    : [
+        { mes: 'Ene', gastos: 42000 },
+        { mes: 'Feb', gastos: 38500 },
+        { mes: 'Mar', gastos: 51000 },
+        { mes: 'Abr', gastos: 33000 },
+        { mes: 'May', gastos: 47500 },
+        { mes: 'Jun', gastos: 29000 },
+        { mes: 'Jul', gastos: 55000 },
+        { mes: 'Ago', gastos: 41000 },
+        { mes: 'Sep', gastos: 36500 },
+      ]
+
   return (
     <ResponsiveContainer width="100%" height={200}>
-      <AreaChart data={MOCK_DATA} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+      <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
         <defs>
           <linearGradient id="tealGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#539091" stopOpacity={0.2} />
             <stop offset="100%" stopColor="#539091" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid
-          strokeDasharray="3 3"
-          stroke="rgba(83,144,145,0.08)"
-          vertical={false}
-        />
-        <XAxis
-          dataKey="mes"
-          tick={{ fill: 'var(--ink-muted)', fontSize: 11 }}
-          axisLine={false}
-          tickLine={false}
-        />
-        <YAxis
-          tick={{ fill: 'var(--ink-muted)', fontSize: 11 }}
-          axisLine={false}
-          tickLine={false}
-          tickFormatter={v => `₡${(v / 1000).toFixed(0)}k`}
-        />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(83,144,145,0.08)" vertical={false} />
+        <XAxis dataKey="mes" tick={{ fill: 'var(--ink-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
+        <YAxis tick={{ fill: 'var(--ink-muted)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `₡${(v/1000).toFixed(0)}k`} />
         <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(83,144,145,0.2)', strokeWidth: 1 }} />
         <Area
           type="monotone"
