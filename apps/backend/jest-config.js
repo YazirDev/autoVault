@@ -2,12 +2,21 @@ module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: 'src',
   testRegex: '.*\\.spec\\.ts$',
-  transform: { '^.+\\.(t|j)s$': 'ts-jest' },
+  transform: {
+    '^.+\\.(t|j)s$': ['ts-jest', {
+      tsconfig: {
+        module: 'commonjs',
+        experimentalDecorators: true,
+        emitDecoratorMetadata: true,
+      },
+    }],
+  },
   collectCoverageFrom: [
     '**/*.(t|j)s',
     '!**/*.spec.ts',
     '!**/index.ts',
     '!**/*.dto.ts',
+    '!**/main.ts',
   ],
   coverageDirectory: '../coverage',
   testEnvironment: 'node',
