@@ -23,7 +23,16 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' http://localhost:3001 https://*.supabase.co https://accounts.google.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com"
+      "csp": "default-src 'self'; connect-src 'self' http://localhost:3001 https://*.supabase.co; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com"
+    }
+  },
+  "plugins": {
+    "opener": {
+      "open": {
+        "allow": [
+          { "url": "https://accounts.google.com/**" }
+        ]
+      }
     }
   },
   "bundle": {
